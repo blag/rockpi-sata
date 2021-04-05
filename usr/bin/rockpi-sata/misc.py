@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import re
 import os
 import sys
@@ -8,6 +9,9 @@ import RPi.GPIO as GPIO
 import multiprocessing as mp
 from collections import defaultdict
 from configparser import ConfigParser
+
+
+logger = logging.getLogger(__name__)
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -131,7 +135,8 @@ def read_conf():
             conf['fan']['lv5'] = cfg.getfloat('fan', 'lv5')
             conf['fan']['lv6'] = cfg.getfloat('fan', 'lv6')
             conf['fan']['lv7'] = cfg.getfloat('fan', 'lv7')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for fan".format(e))
         conf['fan']['lv0'] = 35
         conf['fan']['lv1'] = 37
         conf['fan']['lv2'] = 40
@@ -146,7 +151,8 @@ def read_conf():
         conf['key']['click'] = cfg.get('key', 'click')
         conf['key']['twice'] = cfg.get('key', 'twice')
         conf['key']['press'] = cfg.get('key', 'press')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for button functions".format(e))
         conf['key']['click'] = 'slider'
         conf['key']['twice'] = 'switch'
         conf['key']['press'] = 'none'
@@ -155,7 +161,8 @@ def read_conf():
     try:
         conf['time']['twice'] = cfg.getfloat('time', 'twice')
         conf['time']['press'] = cfg.getfloat('time', 'press')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for button press time".format(e))
         conf['time']['twice'] = 0.7  # second
         conf['time']['press'] = 1.8
 
@@ -163,7 +170,8 @@ def read_conf():
     try:
         conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
         conf['slider']['time'] = cfg.getfloat('slider', 'time')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for slider".format(e))
         conf['slider']['auto'] = True
         conf['slider']['time'] = 10  # second
 
@@ -171,7 +179,8 @@ def read_conf():
     try:
         conf['oled']['rotate'] = cfg.getboolean('oled', 'rotate')
         conf['oled']['f-temp'] = cfg.getboolean('oled', 'f-temp')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for oled".format(e))
         conf['oled']['rotate'] = False
         conf['oled']['f-temp'] = False
 
@@ -180,7 +189,8 @@ def read_conf():
         conf['disk']['space_usage_mnt_points'] = cfg.get('disk', 'space_usage_mnt_points').split('|')
         conf['disk']['io_usage_mnt_points'] = cfg.get('disk', 'io_usage_mnt_points').split('|')
         #conf['disk']['disks'] = get_disk_list()
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for disk".format(e))
         conf['disk']['space_usage_mnt_points'] = []
         conf['disk']['io_usage_mnt_points'] = []
         #conf['disk']['disks'] = []
@@ -188,7 +198,8 @@ def read_conf():
     try:
         # network
         conf['network']['interfaces'] = cfg.get('network', 'interfaces').split('|')
-    except Exception:
+    except Exception as e:
+        logger.debug("Config parsing error: {}; using default values for network".format(e))
         conf['network']['interfaces'] = []
 
     return conf
