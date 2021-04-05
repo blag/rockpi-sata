@@ -107,10 +107,10 @@ def get_cpu_temp():
 def read_conf():
     conf = defaultdict(dict)
 
+    cfg = ConfigParser()
+    cfg.read('/etc/rockpi-sata.conf')
+    # fan
     try:
-        cfg = ConfigParser()
-        cfg.read('/etc/rockpi-sata.conf')
-        # fan
         # Reverse compatibility for old configs
         # If none of the new values are found in the cfg
         if set(['lv4', 'lv5', 'lv6', 'lv7']) & set(cfg['fan'].keys()):
@@ -131,26 +131,7 @@ def read_conf():
             conf['fan']['lv5'] = cfg.getfloat('fan', 'lv5')
             conf['fan']['lv6'] = cfg.getfloat('fan', 'lv6')
             conf['fan']['lv7'] = cfg.getfloat('fan', 'lv7')
-        # key
-        conf['key']['click'] = cfg.get('key', 'click')
-        conf['key']['twice'] = cfg.get('key', 'twice')
-        conf['key']['press'] = cfg.get('key', 'press')
-        # time
-        conf['time']['twice'] = cfg.getfloat('time', 'twice')
-        conf['time']['press'] = cfg.getfloat('time', 'press')
-        # other
-        conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
-        conf['slider']['time'] = cfg.getfloat('slider', 'time')
-        conf['oled']['rotate'] = cfg.getboolean('oled', 'rotate')
-        conf['oled']['f-temp'] = cfg.getboolean('oled', 'f-temp')
-        # disk
-        conf['disk']['space_usage_mnt_points'] = cfg.get('disk', 'space_usage_mnt_points').split('|')
-        conf['disk']['io_usage_mnt_points'] = cfg.get('disk', 'io_usage_mnt_points').split('|')
-        #conf['disk']['disks'] = get_disk_list()
-        # network
-        conf['network']['interfaces'] = cfg.get('network', 'interfaces').split('|')
     except Exception:
-        # fan
         conf['fan']['lv0'] = 35
         conf['fan']['lv1'] = 37
         conf['fan']['lv2'] = 40
@@ -159,23 +140,55 @@ def read_conf():
         conf['fan']['lv5'] = 46
         conf['fan']['lv6'] = 48
         conf['fan']['lv7'] = 50
-        # key
+
+    # key
+    try:
+        conf['key']['click'] = cfg.get('key', 'click')
+        conf['key']['twice'] = cfg.get('key', 'twice')
+        conf['key']['press'] = cfg.get('key', 'press')
+    except Exception:
         conf['key']['click'] = 'slider'
         conf['key']['twice'] = 'switch'
         conf['key']['press'] = 'none'
-        # time
+
+    # time
+    try:
+        conf['time']['twice'] = cfg.getfloat('time', 'twice')
+        conf['time']['press'] = cfg.getfloat('time', 'press')
+    except Exception:
         conf['time']['twice'] = 0.7  # second
         conf['time']['press'] = 1.8
-        # other
+
+    # slider
+    try:
+        conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
+        conf['slider']['time'] = cfg.getfloat('slider', 'time')
+    except Exception:
         conf['slider']['auto'] = True
         conf['slider']['time'] = 10  # second
+
+    # oled
+    try:
+        conf['oled']['rotate'] = cfg.getboolean('oled', 'rotate')
+        conf['oled']['f-temp'] = cfg.getboolean('oled', 'f-temp')
+    except Exception:
         conf['oled']['rotate'] = False
         conf['oled']['f-temp'] = False
-        # disk
+
+    # disk
+    try:
+        conf['disk']['space_usage_mnt_points'] = cfg.get('disk', 'space_usage_mnt_points').split('|')
+        conf['disk']['io_usage_mnt_points'] = cfg.get('disk', 'io_usage_mnt_points').split('|')
+        #conf['disk']['disks'] = get_disk_list()
+    except Exception:
         conf['disk']['space_usage_mnt_points'] = []
         conf['disk']['io_usage_mnt_points'] = []
         #conf['disk']['disks'] = []
+
+    try:
         # network
+        conf['network']['interfaces'] = cfg.get('network', 'interfaces').split('|')
+    except Exception:
         conf['network']['interfaces'] = []
 
     return conf
